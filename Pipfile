@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 python-osc = "*"
 kivy = "*"
+cython = "==0.29.10"
 
 [dev-packages]
 pyinstaller = "4.1"
