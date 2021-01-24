@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 python-osc = "*"
-kivy = "*"
+kivy = ">=2.0.0"
 
 [dev-packages]
 
