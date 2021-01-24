@@ -1,48 +1,16 @@
 from pythonosc.dispatcher import Dispatcher
+from typing import List, Any
+
 from pythonosc.osc_server import BlockingOSCUDPServer
+from pythonosc.udp_client import SimpleUDPClient
 
-def record_data(address, *args):
-    rec_file.write(f"{address}: {args}" + "\n")
+dispatcher = Dispatcher(0)
 
-rec_file = open('rec_test.txt', 'w')
+def print_handler(address, *args):
+    print(f"{address}: {args}")
 
-disp = Dispatcher()
+dispatcher.map("/*", print_handler)  # Map wildcard address to set_filter function
 
-disp.map("/some/address*", record_data)
+server = BlockingOSCUDPServer(("192.168.1.22", 1339), dispatcher)
 
-rec_file.close()
-
-ip = "192.168.1.22"
-port = 1338
-
-server = BlockingOSCUDPServer((ip, port), disp)
 server.serve_forever()  # Blocks forever
-
-
-
-# from pythonosc.dispatcher import Dispatcher
-# from pythonosc.osc_server import BlockingOSCUDPServer
-
-# def print_handler(address, *args):
-#     print(f"{address}: {args}")
-
-# def default_handler(address, *args):
-#     print(f"DEFAULT {address}: {args}")
-
-# def record_data(address, *args):
-#     saved_data = []
-#     saved_data.append(f"{address}: {args}")
-
-# dispatcher = Dispatcher()
-# dispatcher.map("/something/*", print_handler)
-# dispatcher.set_default_handler(record_data)
-
-# with open('rec_test.txt', 'w') as writer:
-#     for item in saved_data:
-#         writer.write(f"{item}" + "\n")
-
-# ip = "192.168.1.22"
-# port = 1338
-
-# server = BlockingOSCUDPServer((ip, port), dispatcher)
-# server.serve_forever()  # Blocks forever
