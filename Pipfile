@@ -10,4 +10,4 @@ kivy = ">=2.0.0"
 [dev-packages]
 
 [requires]
-python_version = "3.6.8"
+python_version = "3.9.1"
