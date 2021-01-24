@@ -1,4 +1,5 @@
 import kivy
+import asyncio
 
 from kivy.app import App
 from kivy.uix.label import Label
@@ -32,8 +33,12 @@ class MyApp(App):
         """
         This is the main entry point of the app
         """
-        return Window()    
+        return Window()
 
 
 if __name__ == '__main__':
-    MyApp().run()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(
+        MyApp().async_run(async_lib='asyncio')
+    )
+    loop.close()
