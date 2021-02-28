@@ -1,7 +1,9 @@
 import kivy
-import asyncio
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
+
+# # Async Stuff
+from multiprocessing import Process
 
 from kivy.app import App
 from kivy.uix.label import Label
@@ -17,6 +19,24 @@ from typing import List, Any
 from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 
+class MyServer():
+    def callback(*values):
+        print("got values: {}".format(values))
+
+    def start(self, address='192.168.1.13', port=8234, default=True):
+        dispatcher = Dispatcher()
+        dispatcher.map("/accxyz", self.callback)  # Map wildcard address to set_filter function
+        dispatcher.map("/*", self.callback)  # Map wildcard address to set_filter function
+        server = BlockingOSCUDPServer((address, port), dispatcher)
+        server.serve_forever()
+
+    def stop(self):
+        # Stop the server. Can you stop it, or do we need to kill it?
+        pass
+
+    def updateListenAddress(self):
+        # Update the server_forever address somehow
+        pass
 
 class ConnectionButton(Button):
     def connect(self, instance):
@@ -28,8 +48,10 @@ class ConnectionButton(Button):
         self.text = 'connect'
         self.bind(on_press=self.connect)
 
-
 class Window(Widget):
+    server = MyServer()
+    process: Process
+
     def __init__(self, **args):
         super(Window, self).__init__(**args)
         label = Label(text="Port", color=(1, 0, 0, 1))
@@ -45,44 +67,19 @@ class Window(Widget):
         layout.add_widget(conn_button)
         layout.add_widget(disc_button)
         layout.add_widget(rec_button)
-        
-        self.add_widget(layout)
 
+        # self.process = Process(target=server.start, args=('127.0.0.1', 8000, True))
+        self.process = Process(target=self.server.start)
+        self.process.start()
+
+        self.add_widget(layout)
 
 class MyApp(App):
     def build(self):
         """
         This is the main entry point of the app
         """
-        # # --- OSC TEST ---
-        # dispatcher = Dispatcher()
-
-        # def print_handler(address, *args):
-        #     print(f"{address}: {args}")
-
-        # dispatcher.map("/*", print_handler)  # Map wildcard address to set_filter function
-
-        # server = BlockingOSCUDPServer(("192.168.1.22", 1339), dispatcher)
-
-        # server.serve_forever()  # Blocks forever
-
-        # # --- END OSC TEST ---
-
         return Window()
 
-
-def print_handler(address, *args):
-    print(f"{address}: {args}")
-
-
-async def main():
-    dispatcher = Dispatcher()
-    dispatcher.map("/*", print_handler)  # Map wildcard address to set_filter function
-    server = AsyncIOOSCUDPServer(("192.168.1.22", 1339), dispatcher, asyncio.get_event_loop())
-    transport, protocol = await server.create_serve_endpoint()
-
-    await MyApp().async_run(async_lib='asyncio')
-
-
 if __name__ == '__main__':
-    asyncio.run(main())
+    MyApp().run()
