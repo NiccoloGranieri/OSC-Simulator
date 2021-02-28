@@ -20,19 +20,20 @@ from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 
 class MyServer():
+    dispatcher = Dispatcher()
+    server = None
+
     def callback(*values):
         print("got values: {}".format(values))
 
     def start(self, address='192.168.1.13', port=8234, default=True):
-        dispatcher = Dispatcher()
-        dispatcher.map("/accxyz", self.callback)  # Map wildcard address to set_filter function
-        dispatcher.map("/*", self.callback)  # Map wildcard address to set_filter function
-        server = BlockingOSCUDPServer((address, port), dispatcher)
-        server.serve_forever()
+        self.dispatcher.map("/accxyz", self.callback)  # Map wildcard address to set_filter function
+        self.server = BlockingOSCUDPServer((address, port), self.dispatcher)
+        self.server.serve_forever()
 
-    def stop(self):
+    def stop(self, instance):
         # Stop the server. Can you stop it, or do we need to kill it?
-        pass
+        self.server.shutdown()
 
     def updateListenAddress(self):
         # Update the server_forever address somehow
@@ -58,7 +59,7 @@ class Window(Widget):
         port = TextInput()
         # conn_button = Button(text="Connect")
         conn_button = ConnectionButton()
-        disc_button = Button(text="Disconnect")
+        disc_button = Button(text="Disconnect", on_press=self.server.stop)
         rec_button = Button(text="Record")
         
         layout = BoxLayout(orientation='vertical')
